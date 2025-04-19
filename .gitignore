@@ -1,0 +1,14 @@
+# Virtual environment
+venv/
+
+# Large files
+*.keras
+sudoku.csv
+
+# Python cache
+__pycache__/
+*.pyc
+
+# System files
+.DS_Store
+.env
