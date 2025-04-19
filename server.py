@@ -16,7 +16,9 @@ model = load_model(MODEL_PATH)
 print("[INFO] Model loaded successfully.")
 
 app = Flask(__name__)
-CORS(app)
+from flask_cors import CORS
+
+CORS(app, origins="*", allow_headers=["Content-Type"], methods=["GET", "POST", "OPTIONS"])
 
 @app.route('/solve', methods=['POST'])
 def solve():
