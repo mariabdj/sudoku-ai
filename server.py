@@ -40,7 +40,8 @@ def preprocess_board(board_2d):
 
 def solve_sudoku_with_nn(model, board_2d):
     board = preprocess_board(board_2d)
-    while True:
+    max_iterations = 81
+    for _ in range(max_iterations):
         predictions = model.predict(board.reshape((1, 9, 9, 1))).squeeze()
         pred = np.argmax(predictions, axis=1).reshape((9, 9)) + 1
         prob = np.max(predictions, axis=1).reshape((9, 9))

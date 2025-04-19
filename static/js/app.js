@@ -370,6 +370,7 @@ document.querySelector('#btn-solve-ai').addEventListener('click', async () => {
 
         const data = await response.json();
         const solution = data.solution;
+        if (!solution) throw new Error("No solution received from AI");
 
         // Fill the grid
         for (let i = 0; i < 9; i++) {
