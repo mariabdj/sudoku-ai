@@ -44,23 +44,25 @@ class DataGenerator(keras.utils.Sequence):
 # Define the model
 def create_model():
     model = Sequential([
-        Conv2D(64, (3, 3), activation='relu', padding='same', input_shape=(9, 9, 1)),
+        Conv2D(16, (3, 3), activation='relu', padding='same', input_shape=(9, 9, 1)),
         BatchNormalization(),
-        Conv2D(64, (3, 3), activation='relu', padding='same'),
-        BatchNormalization(),
-        Conv2D(128, (1, 1), activation='relu', padding='same'),
+        Conv2D(32, (1, 1), activation='relu', padding='same'),
         Flatten(),
         Dense(81 * 9),
         Reshape((-1, 9)),
         Activation('softmax')
     ])
-    model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
+    model.compile(
+        loss='sparse_categorical_crossentropy',
+        optimizer=Adam(learning_rate=0.001),
+        metrics=['accuracy']
+    )
     return model
 
 # Train the model
 train_idx = int(len(data) * 0.95)
 data = data.sample(frac=1).reset_index(drop=True)
-training_generator = DataGenerator(data.iloc[:train_idx], subset="train", batch_size=640)
+training_generator = DataGenerator(data.iloc[:train_idx], subset="train", batch_size=256)
 validation_generator = DataGenerator(data.iloc[train_idx:], subset="train", batch_size=640)
 
 # Define callbacks
@@ -74,7 +76,11 @@ if os.path.exists("sudoku_solver.keras"):
 else:
     print("Training a new model...")
     model = create_model()
-    model.fit(training_generator, validation_data=validation_generator, epochs=5, callbacks=[checkpoint, reduce_lr])
+    model.fit(training_generator, validation_data=validation_generator, epochs=3, callbacks=[reduce_lr])
+
+    # Save optimized model without optimizer for deployment
+    model.save("sudoku_solver.keras", save_format="keras", include_optimizer=False)
+
 
 # Function to load the trained model
 def load_trained_model():

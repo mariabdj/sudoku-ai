@@ -1,6 +1,5 @@
 # Virtual environment
 venv/
-renderenv/
 
 # Large files
 sudoku.csv

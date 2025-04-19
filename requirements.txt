@@ -1,5 +1,6 @@
-flask==3.1.0
-flask-cors==5.0.1
-gunicorn==21.2.0
-tensorflow==2.18.0
-numpy==2.0.2
+fastapi
+uvicorn
+keras
+tensorflow
+numpy
+pydantic
