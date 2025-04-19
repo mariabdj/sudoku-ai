@@ -3,53 +3,17 @@ from flask_cors import CORS
 from keras.models import load_model
 import numpy as np
 import os
-import requests
-import time
 
 MODEL_PATH = "sudoku_solver.keras"
-MODEL_URL = "https://huggingface.co/mariabdj/sudoku-ai-model/resolve/main/sudoku_solver.keras"
-model = None  # Global model
+model = load_model(MODEL_PATH)
+print("[INFO] Model loaded successfully.")
 
 app = Flask(__name__)
 CORS(app)
 
-def download_model():
-    print("[INFO] Downloading model...")
-    response = requests.get(MODEL_URL, stream=True)
-    with open(MODEL_PATH, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                f.write(chunk)
-    print("[INFO] Model file downloaded.")
-
-def load_model_safe():
-    global model
-    if model is not None:
-        return
-
-    # Download if not present
-    if not os.path.exists(MODEL_PATH):
-        download_model()
-
-    # Wait until file size stabilizes
-    for _ in range(5):
-        size_before = os.path.getsize(MODEL_PATH)
-        time.sleep(0.5)
-        size_after = os.path.getsize(MODEL_PATH)
-        if size_before == size_after:
-            break
-
-    try:
-        model = load_model(MODEL_PATH)
-        print("[INFO] Model loaded successfully.")
-    except Exception as e:
-        print("[ERROR] Failed to load model:", e)
-        raise
-
 @app.route('/solve', methods=['POST'])
 def solve():
     try:
-        load_model_safe()
         data = request.get_json()
 
         if not data or 'puzzle' not in data:
