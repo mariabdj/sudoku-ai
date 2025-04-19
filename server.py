@@ -3,6 +3,10 @@ from flask_cors import CORS
 from keras.models import load_model
 import numpy as np
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # suppress warnings
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["TF_NUM_INTRAOP_THREADS"] = "1"
+os.environ["TF_NUM_INTEROP_THREADS"] = "1"
 import tensorflow as tf
 tf.config.threading.set_intra_op_parallelism_threads(1)
 tf.config.threading.set_inter_op_parallelism_threads(1)
@@ -16,6 +20,7 @@ CORS(app)
 
 @app.route('/solve', methods=['POST'])
 def solve():
+    print("[INFO] /solve endpoint was called.")
     try:
         data = request.get_json()
 
@@ -26,6 +31,7 @@ def solve():
         if not isinstance(puzzle, list) or len(puzzle) != 9 or not all(len(row) == 9 for row in puzzle):
             return jsonify({"error": "Puzzle must be a 9x9 list of integers"}), 400
 
+        print("[INFO] Solution prepared and being sent.")
         solution = solve_sudoku_with_nn(model, puzzle)
         return jsonify({"solution": solution})
 
@@ -41,7 +47,7 @@ def preprocess_board(board_2d):
 def solve_sudoku_with_nn(model, board_2d):
     board = preprocess_board(board_2d)
     max_iterations = 81
-    for _ in range(max_iterations):
+    for _ in range(3):  # temporarily limit to 3 steps
         predictions = model.predict(board.reshape((1, 9, 9, 1))).squeeze()
         pred = np.argmax(predictions, axis=1).reshape((9, 9)) + 1
         prob = np.max(predictions, axis=1).reshape((9, 9))
