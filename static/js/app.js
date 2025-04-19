@@ -362,7 +362,7 @@ document.querySelector('#btn-solve-ai').addEventListener('click', async () => {
     }
 
     try {
-        const response = await fetch('https://sudoku-ai-d8sb.onrender.com/solve', {
+        const response = await fetch('https://mariabdjj-sudoku-ai.hf.space/solve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ puzzle })
