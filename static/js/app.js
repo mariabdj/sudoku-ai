@@ -379,7 +379,7 @@ document.querySelector('#btn-solve-ai').addEventListener('click', async () => {
                     cells[index].innerHTML = solution[i][j];
                     cells[index].setAttribute('data-value', solution[i][j]);
                     cells[index].classList.add('filled');
-                    cells[index].style.color = '#e91e63'; // new filled color
+                    cells[index].style.color = '#e91e63';
                 }
             }
         }

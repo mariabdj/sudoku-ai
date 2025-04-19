@@ -8,6 +8,8 @@ import requests
 MODEL_PATH = "sudoku_solver.keras"
 MODEL_URL = "https://huggingface.co/mariabdj/sudoku-ai-model/resolve/main/sudoku_solver.keras"
 
+model = None  # Global placeholder for the model
+
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("[INFO] Model not found. Downloading...")
@@ -21,9 +23,15 @@ def download_model():
 app = Flask(__name__)
 CORS(app)
 
-# ✅ Download model before loading it
-download_model()
-model = load_model(MODEL_PATH)
+@app.before_first_request
+def load_ai_model():
+    global model
+    try:
+        download_model()
+        model = load_model(MODEL_PATH)
+        print("[INFO] Model loaded successfully.")
+    except Exception as e:
+        print("[ERROR] Failed to load model:", e)
 
 def preprocess_board(board_2d):
     flat = [int(cell) for row in board_2d for cell in row]
@@ -50,25 +58,19 @@ def solve_sudoku_with_nn(model, board_2d):
 @app.route('/solve', methods=['POST'])
 def solve():
     try:
+        global model
+        if model is None:
+            return jsonify({"error": "Model not loaded"}), 500
+
         data = request.get_json()
         if not data or 'puzzle' not in data:
             return jsonify({"error": "Missing 'puzzle' in request"}), 400
 
         puzzle = data['puzzle']
-
         if not isinstance(puzzle, list) or len(puzzle) != 9 or not all(len(row) == 9 for row in puzzle):
             return jsonify({"error": "Puzzle must be a 9x9 list of integers"}), 400
 
-        print("[INFO] Received puzzle:")
-        for row in puzzle:
-            print(row)
-
         solution = solve_sudoku_with_nn(model, puzzle)
-
-        print("[INFO] Sending solution:")
-        for row in solution:
-            print(row)
-
         return jsonify({"solution": solution})
 
     except Exception as e:
