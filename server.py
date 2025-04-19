@@ -23,15 +23,16 @@ def download_model():
 app = Flask(__name__)
 CORS(app)
 
-@app.before_serving
-def load_ai_model():
-    global model
-    try:
+model_loaded = False
+
+@app.before_request
+def load_ai_model_once():
+    global model, model_loaded
+    if not model_loaded:
         download_model()
         model = load_model(MODEL_PATH)
+        model_loaded = True
         print("[INFO] Model loaded successfully.")
-    except Exception as e:
-        print("[ERROR] Failed to load model:", e)
 
 def preprocess_board(board_2d):
     flat = [int(cell) for row in board_2d for cell in row]
