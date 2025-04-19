@@ -8,7 +8,6 @@ import requests
 MODEL_PATH = "sudoku_solver.keras"
 MODEL_URL = "https://huggingface.co/mariabdj/sudoku-ai-model/resolve/main/sudoku_solver.keras"
 
-# ✅ Download the model if not present
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("[INFO] Model not found. Downloading...")
@@ -19,12 +18,12 @@ def download_model():
                     f.write(chunk)
         print("[INFO] Model downloaded successfully.")
 
-# ✅ Download once, then load
-download_model()
-model = load_model(MODEL_PATH)
-
 app = Flask(__name__)
 CORS(app)
+
+# ✅ Download model before loading it
+download_model()
+model = load_model(MODEL_PATH)
 
 def preprocess_board(board_2d):
     flat = [int(cell) for row in board_2d for cell in row]
