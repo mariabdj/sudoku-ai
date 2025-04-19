@@ -8,7 +8,7 @@ import requests
 MODEL_PATH = "sudoku_solver.keras"
 MODEL_URL = "https://huggingface.co/mariabdj/sudoku-ai-model/resolve/main/sudoku_solver.keras"
 
-model = None  # Global placeholder for the model
+model = None  # Global model placeholder
 
 def download_model():
     if not os.path.exists(MODEL_PATH):
@@ -16,23 +16,43 @@ def download_model():
         response = requests.get(MODEL_URL, stream=True)
         with open(MODEL_PATH, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+                f.write(chunk)
         print("[INFO] Model downloaded successfully.")
+
+def load_model_safe():
+    global model
+    if model is None:
+        if not os.path.exists(MODEL_PATH):
+            download_model()
+        try:
+            model = load_model(MODEL_PATH)
+            print("[INFO] Model loaded.")
+        except Exception as e:
+            print("[ERROR] Could not load model:", e)
+            raise
 
 app = Flask(__name__)
 CORS(app)
 
-model_loaded = False
+@app.route('/solve', methods=['POST'])
+def solve():
+    try:
+        load_model_safe()
 
-@app.before_request
-def load_ai_model_once():
-    global model, model_loaded
-    if not model_loaded:
-        download_model()
-        model = load_model(MODEL_PATH)
-        model_loaded = True
-        print("[INFO] Model loaded successfully.")
+        data = request.get_json()
+        if not data or 'puzzle' not in data:
+            return jsonify({"error": "Missing 'puzzle' in request"}), 400
+
+        puzzle = data['puzzle']
+        if not isinstance(puzzle, list) or len(puzzle) != 9 or not all(len(row) == 9 for row in puzzle):
+            return jsonify({"error": "Puzzle must be a 9x9 list of integers"}), 400
+
+        solution = solve_sudoku_with_nn(model, puzzle)
+        return jsonify({"solution": solution})
+
+    except Exception as e:
+        print("[ERROR]", e)
+        return jsonify({"error": str(e)}), 500
 
 def preprocess_board(board_2d):
     flat = [int(cell) for row in board_2d for cell in row]
@@ -55,28 +75,6 @@ def solve_sudoku_with_nn(model, board_2d):
         board[x][y] = pred[x][y]
         board = (board / 9) - 0.5
     return board.astype(int).tolist()
-
-@app.route('/solve', methods=['POST'])
-def solve():
-    try:
-        global model
-        if model is None:
-            return jsonify({"error": "Model not loaded"}), 500
-
-        data = request.get_json()
-        if not data or 'puzzle' not in data:
-            return jsonify({"error": "Missing 'puzzle' in request"}), 400
-
-        puzzle = data['puzzle']
-        if not isinstance(puzzle, list) or len(puzzle) != 9 or not all(len(row) == 9 for row in puzzle):
-            return jsonify({"error": "Puzzle must be a 9x9 list of integers"}), 400
-
-        solution = solve_sudoku_with_nn(model, puzzle)
-        return jsonify({"solution": solution})
-
-    except Exception as e:
-        print("[ERROR]", e)
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
