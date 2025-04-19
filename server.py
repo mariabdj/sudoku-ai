@@ -3,6 +3,9 @@ from flask_cors import CORS
 from keras.models import load_model
 import numpy as np
 import os
+import tensorflow as tf
+tf.config.threading.set_intra_op_parallelism_threads(1)
+tf.config.threading.set_inter_op_parallelism_threads(1)
 
 MODEL_PATH = "sudoku_solver.keras"
 model = load_model(MODEL_PATH)
