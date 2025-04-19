@@ -23,7 +23,7 @@ def download_model():
 app = Flask(__name__)
 CORS(app)
 
-@app.before_first_request
+@app.before_serving
 def load_ai_model():
     global model
     try:
