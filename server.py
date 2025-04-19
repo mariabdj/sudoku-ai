@@ -3,12 +3,28 @@ from flask_cors import CORS
 from keras.models import load_model
 import numpy as np
 import os
-
-app = Flask(__name__)
-CORS(app)  # ✅ Allow requests from browser/JS frontend
+import requests
 
 MODEL_PATH = "sudoku_solver.keras"
+MODEL_URL = "https://huggingface.co/mariabdj/sudoku-ai-model/resolve/main/sudoku_solver.keras"
+
+# ✅ Download the model if not present
+def download_model():
+    if not os.path.exists(MODEL_PATH):
+        print("[INFO] Model not found. Downloading...")
+        response = requests.get(MODEL_URL, stream=True)
+        with open(MODEL_PATH, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+        print("[INFO] Model downloaded successfully.")
+
+# ✅ Download once, then load
+download_model()
 model = load_model(MODEL_PATH)
+
+app = Flask(__name__)
+CORS(app)
 
 def preprocess_board(board_2d):
     flat = [int(cell) for row in board_2d for cell in row]
