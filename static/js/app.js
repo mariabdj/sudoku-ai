@@ -201,9 +201,9 @@ const checkErr = () => {
                 checkAndMark(boxCell);
             }
 
-            // Mark red if value is incorrect even if not duplicated
+            // If it's not a duplicate, but still not correct → mark red
             const correctVal = su.original[row][col];
-            if (val !== correctVal && !hasDuplicate) {
+            if (!hasDuplicate && val !== correctVal) {
                 cell.classList.add('err');
             }
         }
@@ -251,6 +251,12 @@ const initNumberInputEvent = () => {
 
                 su_answer[row][col] = val;
                 saveGameInfo();
+
+                if (val === su.original[row][col]) {
+                    cells[selected_cell].style.color = '#ffffff';
+                } else {
+                    cells[selected_cell].style.color = ''; // fallback to default
+                }
 
                 checkErr(); // updated logic
 
@@ -349,9 +355,10 @@ const updateCellState = () => {
 
 
 // add button event
-
 document.querySelector('#btn-solve-ai').addEventListener('click', async () => {
-    // Extract current board
+    const loader = document.getElementById('ai-loader');
+    loader.style.display = 'block'; // Show loader
+
     const puzzle = [];
     for (let i = 0; i < 9; i++) {
         puzzle.push([]);
@@ -372,7 +379,6 @@ document.querySelector('#btn-solve-ai').addEventListener('click', async () => {
         const solution = data.solution;
         if (!solution) throw new Error("No solution received from AI");
 
-        // Fill the grid
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
                 const index = i * 9 + j;
@@ -380,7 +386,12 @@ document.querySelector('#btn-solve-ai').addEventListener('click', async () => {
                     cells[index].innerHTML = solution[i][j];
                     cells[index].setAttribute('data-value', solution[i][j]);
                     cells[index].classList.add('filled');
-                    cells[index].style.color = '#e91e63';
+                    if (document.body.classList.contains('dark')) {
+                        cells[index].style.color = '#ffc8dd';  // for dark mode
+                    } else {
+                        cells[index].style.color = '#e91e63';  // for light mode
+                    }
+                    
                 }
             }
         }
@@ -389,9 +400,12 @@ document.querySelector('#btn-solve-ai').addEventListener('click', async () => {
 
     } catch (err) {
         console.error("AI solve error:", err);
-        alert("Failed to solve with AI.");
+        // No alert to user
+    } finally {
+        loader.style.display = 'none'; // Always hide loader
     }
 });
+
 
 
 document.querySelector('#btn-level').addEventListener('click', (e) => {

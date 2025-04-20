@@ -95,24 +95,22 @@ const sudokuCreate = (grid) => {
     let row = unassigned_pos.row;
     let col = unassigned_pos.col;
 
-    number_list.forEach((num, i) => {
+    for (let i = 0; i < number_list.length; i++) {
+        const num = number_list[i];
         if (isSafe(grid, row, col, num)) {
             grid[row][col] = num;
 
-            if (isFullGrid(grid)) {
+            if (sudokuCreate(grid)) {
                 return true;
-            } else {
-                if (sudokuCreate(grid)) {
-                    return true;
-                }
             }
 
             grid[row][col] = CONSTANT.UNASSIGNED;
         }
-    });
+    }
 
-    return isFullGrid(grid);
+    return false;
 }
+
 
 const sudokuCheck = (grid) => {
     let unassigned_pos = {

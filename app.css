@@ -293,6 +293,7 @@ nav {
 }
 
 .main-sudoku-grid {
+    position: relative; /* ✅ new line to allow absolute child like loader */
     display: grid;
     gap: var(--gap);
     grid-template-columns: repeat(9, auto);
@@ -520,3 +521,105 @@ nav {
         height: 100vh;
     }
 }
+
+#btn-solve-ai{
+    margin-top: 18px;
+}
+
+/* ========== Cube Loader Custom ========== */
+#ai-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    pointer-events: none;
+}
+
+/* Adjust faceBox for visibility and mode adaptation */
+.faceBox {
+    border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+/* Light mode colors */
+:root #cube__face--front span { background-color: #ffafcc; }
+:root #cube__face--right span { background-color: #a2d2ff; }
+:root #cube__face--left span  { background-color: #bde0fe; }
+:root #cube__face--top span   { background-color: #ffc8dd; }
+:root #cube__face--bottom span { background-color: #fff0f5; }
+:root #cube__face--back span  { background-color: #f03c78; }
+
+/* Dark mode overrides */
+body.dark #cube__face--front span { background-color: #dccce6; }
+body.dark #cube__face--right span { background-color: #cdb4db; }
+body.dark #cube__face--left span  { background-color: #5d3b6d; }
+body.dark #cube__face--top span   { background-color: #5d3b6d; }
+body.dark #cube__face--bottom span { background-color: #4b2354; }
+body.dark #cube__face--back span  { background-color: #2a1a2e; }
+
+/* From Uiverse.io by htwarriors108 */ 
+.cube {
+    width: 100px;
+    height: 100px;
+    transform-style: preserve-3d;
+    animation: animate 4s linear infinite;
+    cursor: pointer;
+    transition: 0.5s;
+  }
+  
+  .cube:hover {
+    scale: 1.2;
+    animation: animate 3s linear infinite;
+  }
+  
+  .cube__face {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .faceBox {
+    border: calc(100px / 1000) solid rgba(0, 0, 0, 0.8);
+    width: calc(100px / 3);
+    height: calc(100px / 3);
+    opacity: 1;
+  }
+
+  
+  #cube__face--front {
+    transform: rotateY(0deg) translateZ(calc(100px / 2));
+  }
+  
+  #cube__face--right {
+    transform: rotateY(90deg) translateZ(calc(100px / 2));
+  }
+  
+  #cube__face--back {
+    transform: rotateY(180deg) translateZ(calc(100px / 2));
+  }
+  
+  #cube__face--left {
+    transform: rotateY(-90deg) translateZ(calc(100px / 2));
+  }
+  
+  #cube__face--top {
+    transform: rotateX(90deg) translateZ(calc(100px / 2));
+  }
+  
+  #cube__face--bottom {
+    transform: rotateX(-90deg) translateZ(calc(100px / 2));
+  }
+  
+  @keyframes animate {
+    0% {
+      transform: rotateX(-30deg) rotateY(0deg) rotateZ(0deg);
+    }
+  
+    100% {
+      transform: rotateX(-30deg) rotateY(360deg) rotateZ(360deg);
+    }
+  }
